@@ -38,8 +38,24 @@ echo "* Stopping nginx for SSL"
 systemctl stop nginx
 
 echo "* Please enter your domain name (example.com)"
+echo "* Please do not add https:// or http://"
+echo ""
+echo "* Make sure you have added an A record to your domain (DNS)"
 read domain
 
+echo "* Checking if domain is pointing to this server"
+ipcheck = $(dig +short $domain)
+ipchecksystem = $(curl -s http://checkip.amazonaws.com)
+if [ "$ipcheck" = "$ipchecksystem" ]; then
+    echo "* Domain is pointing to this server"
+    echo "* Continuing with installation"
+    continue
+else
+    echo "* Domain is not pointing to this server"
+    echo "* Please add an A record to your domain (DNS)"
+    echo "* And rerun this script"
+    exit 0
+fi
 echo "* Installing SSL"
 certbot certonly --standalone --agree-tos --no-eff-email --register-unsafely-without-email -d $domain
 
